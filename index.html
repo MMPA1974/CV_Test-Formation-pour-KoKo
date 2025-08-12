@@ -9,24 +9,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals (darker light mode), Vibrant Blue, and Rose Accent -->
+    <!-- Chosen Palette: Warm Neutrals (darker text/elements in light mode), Vibrant Blue, Rose Accent, and Gradient Modals -->
     <!-- Application Structure Plan: J'ai conçu une application à page unique avec une navigation supérieure fixe pour un accès rapide aux sections clés : un en-tête percutant, un tableau de bord des compétences avec un graphique radar, une chronologie d'expérience interactive, et des sections pour la formation et les centres d'intérêt. Cette structure permet aux recruteurs de saisir rapidement les informations essentielles (compétences) tout en leur offrant la possibilité d'explorer les détails de l'expérience de manière non linéaire et engageante, ce qui est plus efficace qu'un défilement passif d'un CV traditionnel. Les ajouts de boîtes de dialogue pour la formation et les centres d'intérêt, ainsi que la fonctionnalité de mode sombre/clair et d'impression, enrichissent l'expérience utilisateur en offrant flexibilité et personnalisation. -->
-    <!-- Visualization & Content Choices: CV Info -> Objectif -> Méthode -> Interaction -> Justification. | Qualités -> Informer -> Tags stylisés -> Visuel -> Rapide à scanner. | Compétences Clés -> Comparer -> Graphique Radar (Chart.js) -> Survol pour infos -> Synthèse visuelle et moderne des forces. Pourcentages ajustés pour plus de réalisme. | Expérience Pro -> Organiser/Explorer -> Chronologie verticale interactive -> Clic pour déplier -> Rend 20 ans d'expérience digestes et non écrasants. | Logiciels -> Informer/Détailler -> Badges stylisés cliquables -> Clic pour afficher années d'expérience estimées -> Identification rapide des outils et contextualisation de l'expertise. | Formation/Intérêts -> Informer/Explorer -> Cartes stylisées avec titres cliquables -> Clic pour ouvrir boîte de dialogue (modale) avec contenu détaillé -> Sépare clairement le contenu de support, offre une exploration à la demande sans surcharger la page principale. | Mode Sombre/Clair -> Personnaliser -> Bouton bascule -> Alternance de classes Tailwind (dark:) -> Améliore le confort visuel selon les préférences de l'utilisateur. | Impression -> Utilitaire -> Bouton -> window.print() + @media print CSS -> Permet une version physique soignée et lisible du CV. -->
+    <!-- Visualization & Content Choices: CV Info -> Objectif -> Méthode -> Interaction -> Justification. | Qualités -> Informer -> Tags stylisés -> Visuel -> Rapide à scanner. | Compétences Clés -> Comparer -> Graphique Radar (Chart.js) -> Survol pour infos -> Synthèse visuelle et moderne des forces. Pourcentages ajustés pour plus de réalisme. | Expérience Pro -> Organiser/Explorer -> Chronologie verticale interactive -> Clic pour déplier -> Rend 20 ans d'expérience digestes et non écrasants. | Logiciels -> Informer/Détailler -> Badges stylisés cliquables -> Clic pour afficher années d'expérience estimées -> Identification rapide des outils et contextualisation de l'expertise. | Formation/Intérêts -> Informer/Explorer -> Cartes stylisées avec titres cliquables -> Clic pour ouvrir boîte de dialogue (modale) avec contenu détaillé -> Sépare clairement le contenu de support, offre une exploration à la demande sans surcharger la page principale. | Mode Sombre/Clair -> Personnaliser -> Bouton bascule -> Alternance de classes Tailwind (dark:) -> Améliore le confort visuel selon les préférences de l'utilisateur avec des contrastes améliorés. | Impression -> Utilitaire -> Bouton -> window.print() + @media print CSS -> Permet une version physique soignée et lisible du CV. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         :root {
-            --bg-color-light: #F0F4F8; /* Lighter blue-gray background */
-            --text-color-light: #1E293B; /* Darker slate-800 for main text */
+            /* Light Mode Colors - Darker Text/Elements on Light Background */
+            --bg-color-light: #F0F4F8; /* Light blue-gray background */
+            --text-color-light: #1A202C; /* Near black for main text (gray-900) */
             --card-bg-light: #FFFFFF;
             --border-color-light: #2563EB; /* Blue 600 */
             --header-bg-light: #FFFFFF;
             --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-            --bg-color-dark: #1A202C; /* gray-900 */
-            --text-color-dark: #E2E8F0; /* gray-200 */
-            --card-bg-dark: #2D3748; /* gray-800 */
-            --border-color-dark: #63B3ED; /* blue-300 */
-            --header-bg-dark: #2D3748;
+            /* Dark Mode Colors - Lighter Text/Elements on Dark Background */
+            --bg-color-dark: #1A202C; /* Dark background (gray-900) */
+            --text-color-dark: #E2E8F0; /* Light text (gray-200) */
+            --card-bg-dark: #2D3748; /* Darker card background (gray-800) */
+            --border-color-dark: #63B3ED; /* Light blue (blue-300) */
+            --header-bg-dark: #2D3748; /* Dark header (gray-800) */
             --shadow-dark: 0 4px 6px rgba(0, 0, 0, 0.5);
         }
 
@@ -116,22 +118,18 @@
         }
         .modal-content {
             z-index: 61; /* Higher than overlay */
-            /* Default background for modal content, will be overridden by type-specific */
-            background-color: var(--card-bg-light); /* Default for light */
             transition: transform 0.3s ease-out, opacity 0.3s ease-out, background-color 0.3s ease;
-        }
-        html[data-theme='dark'] .modal-content {
-            background-color: var(--card-bg-dark); /* Default for dark */
         }
         
         /* Specific modal background for warm type (Formation & Interests) */
-        .modal-content.bg-warm-type-light {
-            background-color: #FFF7ED; /* bg-orange-50 from Tailwind - very light warm */
+        .modal-content.bg-warm-gradient-light {
+            background: linear-gradient(to bottom right, #FFD1DC, #DDA0DD, #ADD8E6, #90EE90); /* Pink, Plum, LightBlue, LightGreen */
+            color: #1A202C; /* Dark text for light gradient */
         }
-        .modal-content.bg-warm-type-dark {
-            background-color: #9A3412; /* orange-800 from Tailwind - dark warm */
+        .modal-content.bg-warm-gradient-dark {
+            background: linear-gradient(to bottom right, #FF69B4, #BA55D3, #4682B4, #3CB371); /* HotPink, MediumPurple, SteelBlue, MediumSeaGreen */
+            color: #E2E8F0; /* Light text for dark gradient */
         }
-
 
         /* Print styles */
         @media print {
@@ -261,11 +259,11 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M5 4V2H15V4H5ZM15 6H5V14H15V6ZM17 6H16V14H17L17 6Z" clip-rule="evenodd" />
                         <path d="M14 17H6C5.44772 17 5 16.5523 5 16V14H15V16C15 16.5523 14.5523 17 14 17Z" />
-                    </svg>
-                </button>
-            </div>
-        </nav>
-    </header>
+                        </svg>
+                    </button>
+                </div>
+            </nav>
+        </header>
 
     <main class="container mx-auto px-6 py-12">
 
@@ -452,7 +450,7 @@
             let skillsChart; // Declare chart variable globally to allow updates
 
             function createOrUpdateChart(theme) {
-                const textColor = theme === 'dark' ? '#E2E8F0' : '#1E293B'; /* gray-200 vs slate-800 */
+                const textColor = theme === 'dark' ? '#E2E8F0' : '#1A202C'; /* gray-200 vs gray-900 */
                 const gridColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
                 const pointBackgroundColor = theme === 'dark' ? '#63B3ED' : '#2563EB'; /* blue-300 vs blue-600 */
                 const borderColor = theme === 'dark' ? '#63B3ED' : '#2563EB';
@@ -659,14 +657,14 @@
                 genericModal.classList.remove('hidden');
 
                 // Reset background classes
-                genericModalContent.classList.remove('bg-warm-type-light', 'bg-warm-type-dark', 'bg-primary-card', 'dark:bg-gray-800');
+                genericModalContent.classList.remove('bg-warm-gradient-light', 'bg-warm-gradient-dark', 'bg-primary-card', 'dark:bg-gray-800');
 
                 // Apply specific background based on type and theme
                 if (type === 'warm') { // For formation and interest modals
                     if (htmlElement.getAttribute('data-theme') === 'dark') {
-                        genericModalContent.classList.add('bg-warm-type-dark'); // Dark warm
+                        genericModalContent.classList.add('bg-warm-gradient-dark'); 
                     } else {
-                        genericModalContent.classList.add('bg-warm-type-light'); // Light warm
+                        genericModalContent.classList.add('bg-warm-gradient-light'); 
                     }
                 } else { // Fallback to primary card background if 'generic' type
                     if (htmlElement.getAttribute('data-theme') === 'dark') {
@@ -675,6 +673,26 @@
                         genericModalContent.classList.add('bg-primary-card');
                     }
                 }
+                
+                // Adjust text color for the modal content based on the applied gradient/theme
+                if (type === 'warm' && htmlElement.getAttribute('data-theme') === 'dark') {
+                    modalTitle.classList.add('text-gray-100');
+                    modalBody.classList.add('text-gray-200');
+                    modalTitle.classList.remove('text-slate-800');
+                    modalBody.classList.remove('text-slate-600');
+                } else if (type === 'warm' && htmlElement.getAttribute('data-theme') === 'light') {
+                    modalTitle.classList.add('text-slate-800');
+                    modalBody.classList.add('text-slate-600');
+                    modalTitle.classList.remove('text-gray-100');
+                    modalBody.classList.remove('text-gray-200');
+                } else {
+                    // Revert to primary text colors for non-warm modals
+                    modalTitle.classList.remove('text-gray-100', 'text-slate-800');
+                    modalBody.classList.remove('text-gray-200', 'text-slate-600');
+                    modalTitle.classList.add(htmlElement.getAttribute('data-theme') === 'dark' ? 'text-gray-100' : 'text-slate-800');
+                    modalBody.classList.add(htmlElement.getAttribute('data-theme') === 'dark' ? 'text-gray-300' : 'text-slate-600');
+                }
+
 
                 requestAnimationFrame(() => { 
                     genericModalContent.classList.remove('opacity-0', 'scale-95');
@@ -715,30 +733,20 @@
 
             // --- Update Modal Backgrounds on Theme Change ---
             function updateModalBackgrounds(theme) {
-                // If a modal is currently open, ensure its background is updated
                 if (!genericModal.classList.contains('hidden')) {
                     const currentTitle = modalTitle.innerHTML;
-                    const currentContent = modalBody.innerHTML;
-                    let currentType = 'generic'; // Default
-
-                    // Check if current content matches a warm type (simplified for demonstration)
-                    // In a more complex app, you might store the type in an attribute
                     const isFormationOrInterest = Array.from(document.querySelectorAll('.formation-card, .interest-card')).some(card => {
                         return card.getAttribute('data-title') === currentTitle;
                     });
-                    if (isFormationOrInterest) {
-                        currentType = 'warm';
-                    }
                     
-                    // Re-apply classes to force update
                     const modalContentElement = genericModal.querySelector('.modal-content');
-                    modalContentElement.classList.remove('bg-warm-type-light', 'bg-warm-type-dark', 'bg-primary-card', 'dark:bg-gray-800');
+                    modalContentElement.classList.remove('bg-warm-gradient-light', 'bg-warm-gradient-dark', 'bg-primary-card', 'dark:bg-gray-800');
 
-                    if (currentType === 'warm') {
+                    if (isFormationOrInterest) {
                         if (theme === 'dark') {
-                            modalContentElement.classList.add('bg-warm-type-dark');
+                            modalContentElement.classList.add('bg-warm-gradient-dark');
                         } else {
-                            modalContentElement.classList.add('bg-warm-type-light');
+                            modalContentElement.classList.add('bg-warm-gradient-light');
                         }
                     } else {
                          if (theme === 'dark') {
@@ -746,6 +754,24 @@
                         } else {
                             modalContentElement.classList.add('bg-primary-card');
                         }
+                    }
+
+                    // Also update text colors inside the modal if it's open
+                    if (isFormationOrInterest && theme === 'dark') {
+                        modalTitle.classList.add('text-gray-100');
+                        modalBody.classList.add('text-gray-200');
+                        modalTitle.classList.remove('text-slate-800');
+                        modalBody.classList.remove('text-slate-600');
+                    } else if (isFormationOrInterest && theme === 'light') {
+                        modalTitle.classList.add('text-slate-800');
+                        modalBody.classList.add('text-slate-600');
+                        modalTitle.classList.remove('text-gray-100');
+                        modalBody.classList.remove('text-gray-200');
+                    } else {
+                         modalTitle.classList.remove('text-gray-100', 'text-slate-800');
+                        modalBody.classList.remove('text-gray-200', 'text-slate-600');
+                        modalTitle.classList.add(theme === 'dark' ? 'text-gray-100' : 'text-slate-800');
+                        modalBody.classList.add(theme === 'dark' ? 'text-gray-300' : 'text-slate-600');
                     }
                 }
                 // softwareExperienceModal's background is handled by :root CSS variables, no specific JS update needed
