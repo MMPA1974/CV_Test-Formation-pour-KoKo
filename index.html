@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Interactif - Mathilde Paisley</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (darker light mode), Vibrant Blue, and Rose Accent -->
+    <!-- Application Structure Plan: J'ai conçu une application à page unique avec une navigation supérieure fixe pour un accès rapide aux sections clés : un en-tête percutant, un tableau de bord des compétences avec un graphique radar, une chronologie d'expérience interactive, et des sections pour la formation et les centres d'intérêt. Cette structure permet aux recruteurs de saisir rapidement les informations essentielles (compétences) tout en leur offrant la possibilité d'explorer les détails de l'expérience de manière non linéaire et engageante, ce qui est plus efficace qu'un défilement passif d'un CV traditionnel. Les ajouts de boîtes de dialogue pour la formation et les centres d'intérêt, ainsi que la fonctionnalité de mode sombre/clair et d'impression, enrichissent l'expérience utilisateur en offrant flexibilité et personnalisation. -->
+    <!-- Visualization & Content Choices: CV Info -> Objectif -> Méthode -> Interaction -> Justification. | Qualités -> Informer -> Tags stylisés -> Visuel -> Rapide à scanner. | Compétences Clés -> Comparer -> Graphique Radar (Chart.js) -> Survol pour infos -> Synthèse visuelle et moderne des forces. Pourcentages ajustés pour plus de réalisme. | Expérience Pro -> Organiser/Explorer -> Chronologie verticale interactive -> Clic pour déplier -> Rend 20 ans d'expérience digestes et non écrasants. | Logiciels -> Informer/Détailler -> Badges stylisés cliquables -> Clic pour afficher années d'expérience estimées -> Identification rapide des outils et contextualisation de l'expertise. | Formation/Intérêts -> Informer/Explorer -> Cartes stylisées avec titres cliquables -> Clic pour ouvrir boîte de dialogue (modale) avec contenu détaillé -> Sépare clairement le contenu de support, offre une exploration à la demande sans surcharger la page principale. | Mode Sombre/Clair -> Personnaliser -> Bouton bascule -> Alternance de classes Tailwind (dark:) -> Améliore le confort visuel selon les préférences de l'utilisateur. | Impression -> Utilitaire -> Bouton -> window.print() + @media print CSS -> Permet une version physique soignée et lisible du CV. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        :root {
+            --bg-color-light: #F0F4F8; /* Lighter blue-gray background */
+            --text-color-light: #1E293B; /* Darker slate-800 for main text */
+            --card-bg-light: #FFFFFF;
+            --border-color-light: #2563EB; /* Blue 600 */
+            --header-bg-light: #FFFFFF;
+            --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+            --bg-color-dark: #1A202C; /* gray-900 */
+            --text-color-dark: #E2E8F0; /* gray-200 */
+            --card-bg-dark: #2D3748; /* gray-800 */
+            --border-color-dark: #63B3ED; /* blue-300 */
+            --header-bg-dark: #2D3748;
+            --shadow-dark: 0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        html[data-theme='light'] {
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+        }
+        html[data-theme='dark'] {
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Generic styling for light/dark mode */
+        html[data-theme='light'] .bg-primary-card { background-color: var(--card-bg-light); }
+        html[data-theme='dark'] .bg-primary-card { background-color: var(--card-bg-dark); }
+
+        html[data-theme='light'] .text-primary-text { color: var(--text-color-light); }
+        html[data-theme='dark'] .text-primary-text { color: var(--text-color-dark); }
+
+        html[data-theme='light'] .border-primary-accent { border-color: var(--border-color-light); }
+        html[data-theme='dark'] .border-primary-accent { border-color: var(--border-color-dark); }
+
+        html[data-theme='light'] .shadow-primary-shadow { box-shadow: var(--shadow-light); }
+        html[data-theme='dark'] .shadow-primary-shadow { box-shadow: var(--shadow-dark); }
+
+        html[data-theme='light'] .header-bg { background-color: var(--header-bg-light); }
+        html[data-theme='dark'] .header-bg { background-color: var(--header-bg-dark); }
+
+        .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+            padding-bottom: 4px;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #EF4444; /* rose-500 */
+            transition: width 0.3s ease;
+        }
+        .nav-link.active::after, .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .timeline-item-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .timeline-item.open .timeline-item-content {
+            max-height: 500px; /* Sufficient for content */
+        }
+        .timeline-icon-plus {
+            transition: transform 0.5s ease;
+        }
+        .timeline-item.open .timeline-icon-plus {
+            transform: rotate(45deg);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        /* Modal specific styling */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 60; /* Higher than header z-50 */
+        }
+        .modal-content {
+            z-index: 61; /* Higher than overlay */
+            /* Default background for modal content, will be overridden by type-specific */
+            background-color: var(--card-bg-light); /* Default for light */
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, background-color 0.3s ease;
+        }
+        html[data-theme='dark'] .modal-content {
+            background-color: var(--card-bg-dark); /* Default for dark */
+        }
+        
+        /* Specific modal background for warm type (Formation & Interests) */
+        .modal-content.bg-warm-type-light {
+            background-color: #FFF7ED; /* bg-orange-50 from Tailwind - very light warm */
+        }
+        .modal-content.bg-warm-type-dark {
+            background-color: #9A3412; /* orange-800 from Tailwind - dark warm */
+        }
+
+
+        /* Print styles */
+        @media print {
+            body {
+                background-color: #fff !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact; /* For background colors */
+                print-color-adjust: exact;
+            }
+            header, footer, .hidden-print {
+                display: none !important;
+            }
+            main {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+            section {
+                margin-bottom: 1rem !important;
+                padding: 0.5rem !important;
+                page-break-inside: avoid; /* Avoid breaking sections across pages */
+            }
+            h1, h2, h3, h4 {
+                color: #000 !important;
+            }
+            /* Adjust layout for printing */
+            #profil, #competences, #experience, #formation, #interets {
+                text-align: left !important;
+                max-width: 100% !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding: 0 1rem !important; /* Small padding for edges */
+            }
+            #profil .flex, #competences .grid, #interets .grid {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.5rem !important;
+            }
+            #profil p, #profil a, #profil span {
+                text-align: left !important;
+            }
+            .chart-container {
+                max-width: 400px !important;
+                height: 300px !important;
+                margin: 1rem 0 !important;
+            }
+            .timeline-item {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+            .timeline-item .w-5/12 {
+                width: 100% !important;
+            }
+            .timeline-item-content {
+                max-height: fit-content !important; /* Ensure all content is visible */
+                overflow: visible !important;
+            }
+            .timeline-item .absolute {
+                display: none !important; /* Hide the plus icon */
+            }
+            .timeline-item-trigger {
+                cursor: default !important;
+                box-shadow: none !important;
+            }
+            .list-disc {
+                list-style-type: disc !important;
+                padding-left: 20px !important;
+            }
+            .rounded-full, .rounded-lg, .rounded-2xl {
+                border-radius: 0 !important;
+            }
+            .shadow-lg {
+                box-shadow: none !important;
+                border: 1px solid #eee;
+            }
+            /* Ensure text contrast for print */
+            .text-slate-800, .text-blue-600, .text-slate-700, .text-slate-600, .text-slate-500,
+            .text-blue-800, .text-green-800, .text-yellow-800, .text-purple-800 {
+                color: #000 !important;
+            }
+            .bg-blue-100, .bg-green-100, .bg-yellow-100, .bg-purple-100, .bg-slate-200, .bg-orange-100 {
+                background-color: #fff !important; /* Clear backgrounds for print */
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased text-primary-text">
+
+    <header class="header-bg shadow-sm sticky top-0 z-50 hidden-print">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="text-xl font-bold text-slate-700 dark:text-gray-200">Mathilde Paisley</div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#profil" class="nav-link text-slate-600 dark:text-gray-300 hover:text-rose-500">Profil</a>
+                    <a href="#competences" class="nav-link text-slate-600 dark:text-gray-300 hover:text-rose-500">Compétences</a>
+                    <a href="#experience" class="nav-link text-slate-600 dark:text-gray-300 hover:text-rose-500">Expérience</a>
+                    <a href="#formation" class="nav-link text-slate-600 dark:text-gray-300 hover:text-rose-500">Formation</a>
+                    <button id="theme-toggle" class="p-2 rounded-full bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200 hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors">
+                        <span id="theme-icon">☀️</span>
+                    </button>
+                    <button id="print-cv-button" class="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors">
+                        <span>Imprimer le CV</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5 4V2H15V4H5ZM15 6H5V14H15V6ZM17 6H16V14H17L17 6Z" clip-rule="evenodd" />
+                            <path d="M14 17H6C5.44772 17 5 16.5523 5 16V14H15V16C15 16.5523 14.5523 17 14 17Z" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="md:hidden flex items-center space-x-4">
+                    <button id="theme-toggle-mobile" class="p-2 rounded-full bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200 hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors">
+                        <span id="theme-icon-mobile">☀️</span>
+                    </button>
+                    <button id="mobile-menu-button" class="text-slate-700 dark:text-gray-200 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-4">
+                <a href="#profil" class="block py-2 px-4 text-sm nav-link text-slate-600 dark:text-gray-300 hover:text-rose-500">Profil</a>
+                <a href="#competences" class="block py-2 px-4 text-sm nav-link text-slate-600 dark:text-gray-300 hover:text-rose-500">Compétences</a>
+                <a href="#experience" class="block py-2 px-4 text-sm nav-link text-slate-600 dark:text-gray-300 hover:text-rose-500">Expérience</a>
+                <a href="#formation" class="block py-2 px-4 text-sm nav-link text-slate-600 dark:text-gray-300 hover:text-rose-500">Formation</a>
+                 <button id="print-cv-button-mobile" class="flex items-center space-x-2 w-full justify-center mt-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors">
+                    <span>Imprimer le CV</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 4V2H15V4H5ZM15 6H5V14H15V6ZM17 6H16V14H17L17 6Z" clip-rule="evenodd" />
+                        <path d="M14 17H6C5.44772 17 5 16.5523 5 16V14H15V16C15 16.5523 14.5523 17 14 17Z" />
+                    </svg>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="profil" class="text-center mb-24 scroll-mt-20">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-4xl md:text-5xl font-bold text-slate-800 dark:text-gray-100 mb-2">MATHILDE PAISLEY</h1>
+                <h2 class="text-xl md:text-2xl font-medium text-blue-600 dark:text-blue-400 mb-6">COORDONNATRICE SIRH PROJET</h2>
+                <div class="flex justify-center items-center space-x-3 mb-8">
+                    <span class="bg-blue-100 dark:bg-blue-800 dark:text-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">Innovante</span>
+                    <span class="bg-green-100 dark:bg-green-800 dark:text-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">Dynamique</span>
+                    <span class="bg-yellow-100 dark:bg-yellow-800 dark:text-yellow-100 text-yellow-800 text-sm font-medium px-3 py-1 rounded-full">Analytique</span>
+                    <span class="bg-purple-100 dark:bg-purple-800 dark:text-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full">Adaptative</span>
+                </div>
+                <p class="text-lg text-slate-600 dark:text-gray-300 leading-relaxed mb-8">
+                    Experte SIRH et Paie, passionnée par les défis et l'innovation, je mets mes 20 années d'expérience au service de la performance RH et de la réussite des entreprises, en collaborant étroitement avec les équipes pour atteindre nos objectifs communs.
+                </p>
+                <div class="flex justify-center items-center space-x-6 text-slate-500 dark:text-gray-400">
+                    <a href="mailto:mathilde.paisley@icloud.com" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">mathilde.paisley@icloud.com</a>
+                    <span>•</span>
+                    <a href="tel:0674394604" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">06 74 39 46 04</a>
+                    <span>•</span>
+                    <span>92110 CLICHY, France</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="competences" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-slate-800 dark:text-gray-100 mb-4">Tableau de Bord des Compétences</h2>
+            <p class="text-center text-slate-600 dark:text-gray-300 max-w-3xl mx-auto mb-12">Cette section offre une vue d'ensemble de mes domaines d'expertise et des technologies que je maîtrise. Le graphique radar illustre mes compétences clés, tandis que la liste ci-dessous détaille les logiciels SIRH sur lesquels j'ai travaillé. C'est un aperçu rapide de ma polyvalence technique et fonctionnelle.</p>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="bg-primary-card p-8 rounded-2xl shadow-primary-shadow">
+                    <h3 class="text-xl font-bold text-slate-700 dark:text-gray-200 mb-6 text-center">Domaines d'Expertise</h3>
+                    <div class="chart-container">
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-primary-card p-8 rounded-2xl shadow-primary-shadow">
+                    <h3 class="text-xl font-bold text-slate-700 dark:text-gray-200 mb-6 text-center">Logiciels SIRH & Outils</h3>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <button class="software-tag bg-slate-200 dark:bg-gray-700 text-slate-700 dark:text-gray-200 px-4 py-2 rounded-lg font-medium hover:bg-rose-100 dark:hover:bg-rose-700 hover:text-rose-800 dark:hover:text-rose-100 transition-colors" data-software="HR Access">HR Access</button>
+                        <button class="software-tag bg-slate-200 dark:bg-gray-700 text-slate-700 dark:text-gray-200 px-4 py-2 rounded-lg font-medium hover:bg-rose-100 dark:hover:bg-rose-700 hover:text-rose-800 dark:hover:text-rose-100 transition-colors" data-software="SAP HR">SAP HR</button>
+                        <button class="software-tag bg-slate-200 dark:bg-gray-700 text-slate-700 dark:text-gray-200 px-4 py-2 rounded-lg font-medium hover:bg-rose-100 dark:hover:bg-rose-700 hover:text-rose-800 dark:hover:text-rose-100 transition-colors" data-software="Workday">Workday</button>
+                        <button class="software-tag bg-slate-200 dark:bg-gray-700 text-slate-700 dark:text-gray-200 px-4 py-2 rounded-lg font-medium hover:bg-rose-100 dark:hover:bg-rose-700 hover:text-rose-800 dark:hover:text-rose-100 transition-colors" data-software="Cegid">Cegid</button>
+                        <button class="software-tag bg-slate-200 dark:bg-gray-700 text-slate-700 dark:text-gray-200 px-4 py-2 rounded-lg font-medium hover:bg-rose-100 dark:hover:bg-rose-700 hover:text-rose-800 dark:hover:text-rose-100 transition-colors" data-software="SuccessFactors">SuccessFactors</button>
+                        <button class="software-tag bg-slate-200 dark:bg-gray-700 text-slate-700 dark:text-gray-200 px-4 py-2 rounded-lg font-medium hover:bg-rose-100 dark:hover:bg-rose-700 hover:text-rose-800 dark:hover:text-rose-100 transition-colors" data-software="Pléiade">Pléiade</button>
+                        <button class="software-tag bg-slate-200 dark:bg-gray-700 text-slate-700 dark:text-gray-200 px-4 py-2 rounded-lg font-medium hover:bg-rose-100 dark:hover:bg-rose-700 hover:text-rose-800 dark:hover:text-rose-100 transition-colors" data-software="Squash">Squash</button>
+                        <button class="software-tag bg-slate-200 dark:bg-gray-700 text-slate-700 dark:text-gray-200 px-4 py-2 rounded-lg font-medium hover:bg-rose-100 dark:hover:bg-rose-700 hover:text-rose-800 dark:hover:text-rose-100 transition-colors" data-software="Office 365">Office 365</button>
+                    </div>
+                     <h3 class="text-xl font-bold text-slate-700 dark:text-gray-200 mt-10 mb-6 text-center">Langues</h3>
+                     <div class="flex justify-center items-center">
+                        <div class="text-center">
+                            <p class="font-medium text-slate-700 dark:text-gray-200">Anglais</p>
+                            <p class="text-blue-600 dark:text-blue-400 font-bold text-lg">A2</p>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="experience" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-slate-800 dark:text-gray-100 mb-4">Parcours Professionnel Interactif</h2>
+            <p class="text-center text-slate-600 dark:text-gray-300 max-w-3xl mx-auto mb-12">Explorez mes 20 ans d'expérience à travers cette chronologie. Chaque étape représente un rôle clé dans ma carrière. Cliquez sur un poste pour découvrir les projets, les responsabilités et les succès associés. C'est une façon de naviguer dans mon histoire professionnelle et de voir comment mes compétences ont évolué.</p>
+            <div class="relative max-w-3xl mx-auto">
+                <div class="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-slate-300 dark:bg-gray-600"></div>
+                <div id="timeline-container" class="space-y-12">
+                </div>
+            </div>
+        </section>
+
+        <section id="formation" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-slate-800 dark:text-gray-100 mb-4">Formation & Diplômes</h2>
+            <p class="text-center text-slate-600 dark:text-gray-300 max-w-3xl mx-auto mb-12">Ma formation continue est le socle de mon expertise. Cette section présente les diplômes qui ont structuré ma carrière, de la gestion de la paie au management stratégique des ressources humaines, démontrant mon engagement envers le développement professionnel.</p>
+            <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+                <div class="formation-card bg-primary-card p-8 rounded-2xl shadow-primary-shadow border-l-4 border-blue-500 dark:border-blue-400 cursor-pointer hover:shadow-xl transition-shadow" data-title="Manager Stratégique RH (Bac+5)" data-content="<p>Spécialisation en alignement stratégique des RH, gestion des risques et pilotage de transformation organisationnelle.</p>">
+                    <p class="text-sm text-slate-500 dark:text-gray-400 mb-1">2021 - 2023</p>
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-gray-100 mb-2">Manager Stratégique RH (Bac+5)</h3>
+                    <p class="font-medium text-slate-600 dark:text-gray-300 mb-4">ESGRH</p>
+                </div>
+                <div class="formation-card bg-primary-card p-8 rounded-2xl shadow-primary-shadow border-l-4 border-blue-500 dark:border-blue-400 cursor-pointer hover:shadow-xl transition-shadow" data-title="Gestionnaire de Paie (Bac+2)" data-content="<p>Formation spécialisée en gestion de paie, réglementations du droit social et fondamentaux du droit du travail.</p>">
+                    <p class="text-sm text-slate-500 dark:text-gray-400 mb-1">2013 - 2014</p>
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-gray-100 mb-2">Gestionnaire de Paie (Bac+2)</h3>
+                    <p class="font-medium text-slate-600 dark:text-gray-300 mb-4">M2I Paris 12</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="interets" class="scroll-mt-20">
+             <h2 class="text-3xl font-bold text-center text-slate-800 dark:text-gray-100 mb-4">Centres d'Intérêt</h2>
+             <p class="text-center text-slate-600 dark:text-gray-300 max-w-3xl mx-auto mb-12">Au-delà du monde professionnel, mes passions nourrissent ma créativité et ma curiosité. Elles sont le reflet de ma personnalité et de mon approche innovante.</p>
+             <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                 <button class="interest-card bg-primary-card p-6 rounded-2xl shadow-primary-shadow cursor-pointer hover:shadow-xl transition-shadow" data-title="Création Gourmande" data-content="<p>Pâtisserie et traiteur, passionnée par la création de cookies.</p>">
+                     <p class="text-4xl mb-3">🍪</p>
+                     <h4 class="font-bold text-slate-700 dark:text-gray-200">Création Gourmande</h4>
+                 </button>
+                 <button class="interest-card bg-primary-card p-6 rounded-2xl shadow-primary-shadow cursor-pointer hover:shadow-xl transition-shadow" data-title="Harmonie Musicale" data-content="<p>Musique classique avec une préférence pour le piano, afro-antillaise et Variétés.</p>">
+                     <p class="text-4xl mb-3">🎹</p>
+                     <h4 class="font-bold text-slate-700 dark:text-gray-200">Harmonie Musicale</h4>
+                 </button>
+                 <button class="interest-card bg-primary-card p-6 rounded-2xl shadow-primary-shadow cursor-pointer hover:shadow-xl transition-shadow" data-title="Danse & Mouvement" data-content="<p>Liberté sur la piste, exploration de différents styles avec un intérêt pour le Zouk.</p>">
+                     <p class="text-4xl mb-3">💃</p>
+                     <h4 class="font-bold text-slate-700 dark:text-gray-200">Danse & Mouvement</h4>
+                 </button>
+                 <button class="interest-card bg-primary-card p-6 rounded-2xl shadow-primary-shadow cursor-pointer hover:shadow-xl transition-shadow" data-title="Innovation Connectée" data-content="<p>Technophile curieuse, attirée par l'écosystème d'Apple et l'intelligence artificielle.</p>">
+                     <p class="text-4xl mb-3">🤖</p>
+                     <h4 class="font-bold text-slate-700 dark:text-gray-200">Innovation Connectée</h4>
+                 </button>
+             </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 dark:bg-gray-900 text-white mt-20 hidden-print">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>Mathilde Paisley - Coordonnatrice SIRH Projet</p>
+            <p class="text-slate-400 text-sm mt-2">Disponible pour de nouvelles opportunités</p>
+        </div>
+    </footer>
+
+    <!-- Generic Modal Structure -->
+    <div id="genericModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden modal-overlay">
+        <div class="p-8 rounded-2xl shadow-xl max-w-lg w-full relative transform transition-all duration-300 scale-95 opacity-0 modal-content">
+            <button class="absolute top-4 right-4 text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 transition-colors" id="closeModalButton">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h3 id="modalTitle" class="text-2xl font-bold text-slate-800 dark:text-gray-100 mb-4"></h3>
+            <div id="modalBody" class="text-slate-600 dark:text-gray-300 leading-relaxed"></div>
+        </div>
+    </div>
+
+    <!-- Software Experience Modal (for displaying experience years) -->
+    <div id="softwareExperienceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden modal-overlay">
+        <div class="p-8 rounded-2xl shadow-xl max-w-sm w-full relative transform transition-all duration-300 scale-95 opacity-0 modal-content">
+            <button class="absolute top-4 right-4 text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 transition-colors" id="closeSoftwareModalButton">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h3 id="softwareModalTitle" class="text-2xl font-bold text-slate-800 dark:text-gray-100 mb-4 text-center"></h3>
+            <p id="softwareModalBody" class="text-slate-600 dark:text-gray-300 leading-relaxed text-center"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Theme Toggle Logic ---
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+            const themeIcon = document.getElementById('theme-icon');
+            const themeIconMobile = document.getElementById('theme-icon-mobile');
+            const htmlElement = document.documentElement;
+
+            // Initialize theme from localStorage or default to light
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                htmlElement.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '🌙';
+                themeIconMobile.textContent = '🌙';
+            } else {
+                htmlElement.setAttribute('data-theme', 'light');
+                themeIcon.textContent = '☀️';
+                themeIconMobile.textContent = '☀️';
+            }
+
+            function toggleTheme() {
+                if (htmlElement.getAttribute('data-theme') === 'light') {
+                    htmlElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.textContent = '🌙';
+                    themeIconMobile.textContent = '🌙';
+                    updateChartColors('dark');
+                    updateModalBackgrounds('dark');
+                } else {
+                    htmlElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.textContent = '☀️';
+                    themeIconMobile.textContent = '☀️';
+                    updateChartColors('light');
+                    updateModalBackgrounds('light');
+                }
+            }
+            themeToggle.addEventListener('click', toggleTheme);
+            themeToggleMobile.addEventListener('click', toggleTheme);
+
+            // --- Chart.js Radar Chart ---
+            const skillsChartCtx = document.getElementById('skillsChart').getContext('2d');
+            let skillsChart; // Declare chart variable globally to allow updates
+
+            function createOrUpdateChart(theme) {
+                const textColor = theme === 'dark' ? '#E2E8F0' : '#1E293B'; /* gray-200 vs slate-800 */
+                const gridColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                const pointBackgroundColor = theme === 'dark' ? '#63B3ED' : '#2563EB'; /* blue-300 vs blue-600 */
+                const borderColor = theme === 'dark' ? '#63B3ED' : '#2563EB';
+
+                if (skillsChart) {
+                    skillsChart.destroy(); // Destroy existing chart to redraw with new colors
+                }
+
+                skillsChart = new Chart(skillsChartCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['SIRH & Processus RH', 'Gestion de la Paie', 'Gestion de Projet', 'Management', 'Veille Juridique', 'Administration RH'],
+                        datasets: [{
+                            label: 'Niveau d\'Expertise',
+                            data: [80, 78, 82, 75, 70, 85], // Adjusted percentages (70-85%)
+                            backgroundColor: theme === 'dark' ? 'rgba(99, 179, 237, 0.2)' : 'rgba(59, 130, 246, 0.2)', /* blue-300 vs blue-500 */
+                            borderColor: borderColor,
+                            borderWidth: 2,
+                            pointBackgroundColor: pointBackgroundColor,
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: borderColor
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { color: gridColor },
+                                grid: { color: gridColor },
+                                pointLabels: { 
+                                    font: { size: 12, weight: 'bold' },
+                                    color: textColor
+                                },
+                                ticks: {
+                                    backdropColor: 'transparent',
+                                    stepSize: 20,
+                                    display: false,
+                                    color: textColor 
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 100
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.raw + '%';
+                                    }
+                                },
+                                titleColor: textColor,
+                                bodyColor: textColor,
+                                backgroundColor: theme === 'dark' ? '#2D3748' : '#FFF', /* gray-800 vs white */
+                                borderColor: borderColor,
+                                borderWidth: 1
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateChartColors(theme) {
+                createOrUpdateChart(theme);
+            }
+
+            // Initial chart creation based on saved theme
+            createOrUpdateChart(savedTheme);
+
+            // --- Timeline Experience Logic ---
+            const experienceData = [
+                {
+                    date: 'Depuis Jan. 2023',
+                    title: 'Consultante Senior Fonctionnel',
+                    company: 'CGI',
+                    details: [
+                        "<strong>Ministère de la Justice :</strong> Contribution au projet d'AMOA sur HR Access 4YOU V9, déploiement de la solution Octave pour la paie des détenus (189 établissements).",
+                        "<strong>Air Liquide :</strong> Modélisation des processus RH pour Workday et HR Access, et rédaction de procédures de contrôle de paie."
+                    ],
+                    start: new Date('2023-01-01'),
+                    end: new Date() 
+                },
+                {
+                    date: 'Juil. 2022 - Déc. 2022',
+                    title: 'Chargée RH',
+                    company: 'Talent Solutions',
+                    details: [
+                        "Gestion de la paie pour 4 entités (350 collaborateurs) sur Cegid People Net.",
+                        "Amélioration des processus administratifs.",
+                        "Encadrement d'équipe et mentorat.",
+                        "Mise en place de solutions pour l'intégration des collaborateurs."
+                    ],
+                    start: new Date('2022-07-01'),
+                    end: new Date('2022-12-31')
+                },
+                {
+                    date: 'Nov. 2018 - Mars 2022',
+                    title: 'Consultante Paie SIRH',
+                    company: 'Epi-Use France',
+                    details: [
+                        "Participation à la création d'un CSP pour le groupe Tereos.",
+                        "Conception et modélisation de processus RH pour SAP et Pléiade.",
+                        "Rédaction de procédures de paie."
+                    ],
+                    start: new Date('2018-11-01'),
+                    end: new Date('2022-03-31')
+                },
+                {
+                    date: 'Avr. 2008 - Oct. 2018',
+                    title: 'Chargée de Paie',
+                    company: 'Multi Sociétés',
+                    details: [
+                        "Gestion de la paie pour 250 à 500 collaborateurs.",
+                        "Gestion complète de la DSN.",
+                        "Optimisation des processus RH."
+                    ],
+                    start: new Date('2008-04-01'),
+                    end: new Date('2018-10-31')
+                }
+            ];
+
+            const timelineContainer = document.getElementById('timeline-container');
+            experienceData.forEach((item, index) => {
+                const isLeft = index % 2 === 0;
+                const timelineItem = document.createElement('div');
+                timelineItem.className = `timeline-item relative flex items-center ${isLeft ? 'justify-start' : 'justify-end'}`;
+                
+                timelineItem.innerHTML = `
+                    <div class="w-5/12">
+                        <div class="bg-primary-card p-6 rounded-2xl shadow-primary-shadow cursor-pointer timeline-item-trigger hover:shadow-xl transition-shadow">
+                            <p class="text-sm text-blue-600 dark:text-blue-400 font-semibold mb-1">${item.date}</p>
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-gray-100">${item.title}</h3>
+                            <p class="text-slate-500 dark:text-gray-400 mb-3">${item.company}</p>
+                            <div class="timeline-item-content text-slate-600 dark:text-gray-300">
+                                <ul class="list-disc list-inside space-y-2 mt-4">
+                                    ${item.details.map(d => `<li>${d}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute ${isLeft ? 'left-1/2' : 'right-1/2'} transform ${isLeft ? '-translate-x-1/2' : 'translate-x-1/2'} w-10 h-10 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center shadow-md cursor-pointer timeline-item-trigger">
+                        <div class="timeline-icon-plus text-rose-500 text-3xl font-light">+</div>
+                    </div>
+                `;
+                timelineContainer.appendChild(timelineItem);
+            });
+
+            document.querySelectorAll('.timeline-item-trigger').forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    trigger.closest('.timeline-item').classList.toggle('open');
+                });
+            });
+
+            // --- Mobile Menu Toggle ---
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // --- Smooth Scrolling & Active Nav Link ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: "-30% 0px -30% 0px" }); 
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (mobileMenu.classList.contains('hidden') === false) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            // --- Generic Modal Logic (for Formation and Centres d'Intérêt) ---
+            const genericModal = document.getElementById('genericModal');
+            const closeModalButton = document.getElementById('closeModalButton');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            const genericModalContent = genericModal.querySelector('.modal-content');
+
+            function openModal(title, content, type = 'generic') { 
+                modalTitle.innerHTML = title;
+                modalBody.innerHTML = content;
+                genericModal.classList.remove('hidden');
+
+                // Reset background classes
+                genericModalContent.classList.remove('bg-warm-type-light', 'bg-warm-type-dark', 'bg-primary-card', 'dark:bg-gray-800');
+
+                // Apply specific background based on type and theme
+                if (type === 'warm') { // For formation and interest modals
+                    if (htmlElement.getAttribute('data-theme') === 'dark') {
+                        genericModalContent.classList.add('bg-warm-type-dark'); // Dark warm
+                    } else {
+                        genericModalContent.classList.add('bg-warm-type-light'); // Light warm
+                    }
+                } else { // Fallback to primary card background if 'generic' type
+                    if (htmlElement.getAttribute('data-theme') === 'dark') {
+                        genericModalContent.classList.add('dark:bg-gray-800');
+                    } else {
+                        genericModalContent.classList.add('bg-primary-card');
+                    }
+                }
+
+                requestAnimationFrame(() => { 
+                    genericModalContent.classList.remove('opacity-0', 'scale-95');
+                    genericModalContent.classList.add('opacity-100', 'scale-100');
+                });
+            }
+
+            function closeModal() {
+                genericModalContent.classList.remove('opacity-100', 'scale-100');
+                genericModalContent.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    genericModal.classList.add('hidden');
+                }, 300); 
+            }
+
+            closeModalButton.addEventListener('click', closeModal);
+            genericModal.addEventListener('click', (e) => {
+                if (e.target === genericModal) { 
+                    closeModal();
+                }
+            });
+
+            document.querySelectorAll('.formation-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const title = card.getAttribute('data-title');
+                    const content = card.getAttribute('data-content');
+                    openModal(title, content, 'warm');
+                });
+            });
+
+            document.querySelectorAll('.interest-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const title = card.getAttribute('data-title');
+                    const content = card.getAttribute('data-content');
+                    openModal(title, content, 'warm');
+                });
+            });
+
+            // --- Update Modal Backgrounds on Theme Change ---
+            function updateModalBackgrounds(theme) {
+                // If a modal is currently open, ensure its background is updated
+                if (!genericModal.classList.contains('hidden')) {
+                    const currentTitle = modalTitle.innerHTML;
+                    const currentContent = modalBody.innerHTML;
+                    let currentType = 'generic'; // Default
+
+                    // Check if current content matches a warm type (simplified for demonstration)
+                    // In a more complex app, you might store the type in an attribute
+                    const isFormationOrInterest = Array.from(document.querySelectorAll('.formation-card, .interest-card')).some(card => {
+                        return card.getAttribute('data-title') === currentTitle;
+                    });
+                    if (isFormationOrInterest) {
+                        currentType = 'warm';
+                    }
+                    
+                    // Re-apply classes to force update
+                    const modalContentElement = genericModal.querySelector('.modal-content');
+                    modalContentElement.classList.remove('bg-warm-type-light', 'bg-warm-type-dark', 'bg-primary-card', 'dark:bg-gray-800');
+
+                    if (currentType === 'warm') {
+                        if (theme === 'dark') {
+                            modalContentElement.classList.add('bg-warm-type-dark');
+                        } else {
+                            modalContentElement.classList.add('bg-warm-type-light');
+                        }
+                    } else {
+                         if (theme === 'dark') {
+                            modalContentElement.classList.add('dark:bg-gray-800');
+                        } else {
+                            modalContentElement.classList.add('bg-primary-card');
+                        }
+                    }
+                }
+                // softwareExperienceModal's background is handled by :root CSS variables, no specific JS update needed
+            }
+
+
+            // --- Software Experience Calculation and Modal ---
+            const softwareExperienceModal = document.getElementById('softwareExperienceModal');
+            const closeSoftwareModalButton = document.getElementById('closeSoftwareModalButton');
+            const softwareModalTitle = document.getElementById('softwareModalTitle');
+            const softwareModalBody = document.getElementById('softwareModalBody');
+            const softwareModalContent = softwareExperienceModal.querySelector('.modal-content');
+
+            const softwareData = {
+                "HR Access": [{ start: new Date('2023-01-01'), end: new Date() }, { start: new Date('2022-07-01'), end: new Date('2022-12-31') }],
+                "SAP HR": [{ start: new Date('2018-11-01'), end: new Date('2022-03-31') }],
+                "Workday": [{ start: new Date('2023-01-01'), end: new Date() }],
+                "Cegid": [{ start: new Date('2022-07-01'), end: new Date('2022-12-31') }],
+                "Pléiade": [{ start: new Date('2018-11-01'), end: new Date('2022-03-31') }],
+                "SuccessFactors": [{ start: new Date('2018-11-01'), end: new Date() }], 
+                "Squash": [{ start: new Date('2018-11-01'), end: new Date() }], 
+                "Office 365": [{ start: new Date('2008-04-01'), end: new Date() }] 
+            };
+
+            function calculateExperience(periods) {
+                let totalMonths = 0;
+                periods.forEach(period => {
+                    const startDate = period.start;
+                    const endDate = period.end;
+                    totalMonths += (endDate.getFullYear() - startDate.getFullYear()) * 12;
+                    totalMonths += endDate.getMonth() - startDate.getMonth();
+                });
+
+                const years = Math.floor(totalMonths / 12);
+                const months = totalMonths % 12;
+
+                if (years === 0 && months === 0) {
+                    return "Moins d'un mois (estimation basée sur les périodes d'emploi)";
+                } else if (years === 0) {
+                    return `${months} mois (estimation basée sur les périodes d'emploi)`;
+                } else if (months === 0) {
+                    return `${years} an${years > 1 ? 's' : ''} (estimation basée sur les périodes d'emploi)`;
+                } else {
+                    return `${years} an${years > 1 ? 's' : ''} et ${months} mois (estimation basée sur les périodes d'emploi)`;
+                }
+            }
+
+            document.querySelectorAll('.software-tag').forEach(tag => {
+                tag.addEventListener('click', () => {
+                    const softwareName = tag.getAttribute('data-software');
+                    const periods = softwareData[softwareName];
+                    let experienceText = "Expérience non spécifiée ou moins d'un mois.";
+                    if (periods) {
+                        experienceText = calculateExperience(periods);
+                    } else {
+                         experienceText = "Expérience générale tout au long de la carrière (estimation).";
+                    }
+                    
+                    softwareModalTitle.textContent = softwareName;
+                    softwareModalBody.textContent = `Années d'expérience estimées : ${experienceText}`;
+                    
+                    softwareExperienceModal.classList.remove('hidden');
+                    // Apply theme-dependent background for software modal
+                    if (htmlElement.getAttribute('data-theme') === 'dark') {
+                        softwareModalContent.classList.add('dark:bg-gray-800');
+                        softwareModalContent.classList.remove('bg-primary-card');
+                    } else {
+                        softwareModalContent.classList.add('bg-primary-card');
+                        softwareModalContent.classList.remove('dark:bg-gray-800');
+                    }
+
+                    requestAnimationFrame(() => {
+                        softwareModalContent.classList.remove('opacity-0', 'scale-95');
+                        softwareModalContent.classList.add('opacity-100', 'scale-100');
+                    });
+                });
+            });
+
+            closeSoftwareModalButton.addEventListener('click', () => {
+                softwareModalContent.classList.remove('opacity-100', 'scale-100');
+                softwareModalContent.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    softwareExperienceModal.classList.add('hidden');
+                }, 300);
+            });
+            softwareExperienceModal.addEventListener('click', (e) => {
+                if (e.target === softwareExperienceModal) {
+                    closeSoftwareModalButton.click();
+                }
+            });
+
+
+            // --- Print CV Logic ---
+            const printCvButton = document.getElementById('print-cv-button');
+            const printCvButtonMobile = document.getElementById('print-cv-button-mobile');
+
+            function printCv() {
+                window.print();
+            }
+
+            printCvButton.addEventListener('click', printCv);
+            printCvButtonMobile.addEventListener('click', printCv);
+        });
+    </script>
+</body>
+</html>
